@@ -9,13 +9,13 @@ import './App.css';
 function App() {
   const [documents, setDocuments] = useState([]);
   const [selectedDocument, setSelectedDocument] = useState(null);
-  const [bsvPrice, setBsvPrice] = useState(null);
+  const [bsvPrice, setBsvPrice] = useState(50); // Immediate fallback
   const [priceError, setPriceError] = useState(null);
 
   useEffect(() => {
-    const fetchBsvPrice = async () => {
+    const fetchBsvPrice = async (attempt = 1, maxAttempts = 3) => {
       try {
-        console.log('Fetching BSV price with key:', process.env.REACT_APP_COINGECKO_API_KEY ? 'Set' : 'Missing');
+        console.log('Fetching BSV price, attempt:', attempt);
         const response = await axios.get(
           'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin-sv&vs_currencies=usd',
           {
@@ -31,10 +31,17 @@ function App() {
         setBsvPrice(response.data['bitcoin-sv'].usd);
         setPriceError(null);
       } catch (error) {
-        console.error('Failed to fetch BSV price:', error.message, error.response?.data);
-        setPriceError('Failed to load BSV price. Using fallback.');
-        // Fallback: $50 USD per BSV
-        setBsvPrice(50);
+        console.error('Failed to fetch BSV price:', {
+          message: error.message,
+          status: error.response?.status,
+          data: error.response?.data
+        });
+        if (error.response?.status === 429 && attempt < maxAttempts) {
+          console.log('Rate limit hit, retrying in 2s...');
+          setTimeout(() => fetchBsvPrice(attempt + 1, maxAttempts), 2000);
+        } else {
+          setPriceError('Using fallback BSV price ($50).');
+        }
       }
     };
     fetchBsvPrice();
