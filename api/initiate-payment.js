@@ -48,10 +48,10 @@ module.exports = async (req, res) => {
         {
           destination: 'styraks@handcash.io',
           currencyCode: 'BSV',
-          amount
+          amount: amount
         }
       ],
-      redirect: {
+      redirectUrls: {
         success: 'https://doc-dime-2.vercel.app/success',
         decline: 'https://doc-dime-2.vercel.app/decline'
       }
@@ -79,7 +79,10 @@ module.exports = async (req, res) => {
       paymentRequestUrl: response.data.paymentRequestUrl
     });
   } catch (error) {
-    console.error('Error in initiate-payment:', error.message, error.stack);
+    console.error('Error in initiate-payment:', {
+      message: error.message,
+      stack: error.stack
+    });
     if (error.response) {
       console.error('HandCash API error:', {
         status: error.response.status,
