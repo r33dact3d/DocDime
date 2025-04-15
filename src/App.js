@@ -24,7 +24,10 @@ function App() {
             }
           }
         );
-        console.log('CoinGecko response:', response.data);
+        console.log('CoinGecko response:', {
+          status: response.status,
+          data: response.data
+        });
         if (!response.data['bitcoin-sv'] || !response.data['bitcoin-sv'].usd) {
           throw new Error('Invalid CoinGecko response');
         }
@@ -37,8 +40,9 @@ function App() {
           data: error.response?.data
         });
         if (error.response?.status === 429 && attempt < maxAttempts) {
-          console.log('Rate limit hit, retrying in 2s...');
-          setTimeout(() => fetchBsvPrice(attempt + 1, maxAttempts), 2000);
+          const delay = Math.pow(2, attempt) * 1000; // Exponential backoff
+          console.log(`Rate limit hit, retrying in ${delay}ms...`);
+          setTimeout(() => fetchBsvPrice(attempt + 1, maxAttempts), delay);
         } else {
           setPriceError('Using fallback BSV price ($50).');
         }
