@@ -60,8 +60,8 @@ module.exports = async (req, res) => {
         }
       ],
       redirect: {
-        success: 'https://docdime.vercel.app/success',
-        decline: 'https://docdime.vercel.app/decline'
+        success: 'https://doc-dime-2.vercel.app/success',
+        decline: 'https://doc-dime-2.vercel.app/decline'
       }
     };
 
