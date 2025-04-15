@@ -7,14 +7,6 @@ module.exports = async (req, res) => {
     // Log request details
     console.log('Request:', { method: req.method, body: req.body });
 
-    // Log SDK version (if HandCash Connect is still used later)
-    try {
-      const handcashVersion = require('@handcash/handcash-connect/package.json').version;
-      console.log('HandCash Connect SDK version:', handcashVersion);
-    } catch (e) {
-      console.log('HandCash Connect SDK version unavailable:', e.message);
-    }
-
     // Log environment variables presence
     console.log('App ID:', process.env.HANDCASH_APP_ID ? 'Set' : 'Missing');
     console.log('App Secret:', process.env.HANDCASH_APP_SECRET ? 'Set' : 'Missing');
@@ -38,14 +30,14 @@ module.exports = async (req, res) => {
         hasAppId: !!process.env.HANDCASH_APP_ID,
         hasAppSecret: !!process.env.HANDCASH_APP_SECRET
       });
-      throw new Error('HandCash configuration missing');
+      return res.status(500).json({ error: 'HandCash configuration missing' });
     }
 
     // Validate priceInBsv
     const amount = parseFloat(priceInBsv);
     if (isNaN(amount) || amount <= 0) {
       console.error('Invalid priceInBsv:', priceInBsv);
-      throw new Error('Invalid payment amount');
+      return res.status(400).json({ error: 'Invalid payment amount' });
     }
 
     console.log('Payment amount:', amount);
@@ -89,7 +81,10 @@ module.exports = async (req, res) => {
   } catch (error) {
     console.error('Error in initiate-payment:', error.message, error.stack);
     if (error.response) {
-      console.error('HandCash API error:', error.response.data);
+      console.error('HandCash API error:', {
+        status: error.response.status,
+        data: error.response.data
+      });
     }
     res.status(500).json({ error: 'Internal server error' });
   }
