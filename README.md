@@ -1,6 +1,6 @@
 # DocDime
 
-A micro-media marketplace for files under 1MB, priced around a dime. Built with React, deployed on Vercel, payments via HandCash (BSV).
+A micro-media marketplace for files under 1MB, priced around a dime. Built with React, deployed on Vercel, payments via HandCash (BSV), prices via CoinGecko.
 
 ## Setup
 
@@ -9,13 +9,14 @@ A micro-media marketplace for files under 1MB, priced around a dime. Built with 
 3. Set environment variables:
    - `HANDCASH_APP_ID`
    - `HANDCASH_APP_SECRET`
+   - `COINGECKO_API_KEY`
 4. Run locally: `npm start`.
 5. Deploy: Vercel (free tier).
 
 ## Features
 
 - Upload .pdf, .png, .jpg, .mp4, .zip, .rar, .mp3.
-- Price in BSV.
+- Price in USD, converted to BSV.
 - HandCash payments.
 - In-memory storage (BSV planned).
 
