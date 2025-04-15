@@ -10,10 +10,12 @@ function App() {
   const [documents, setDocuments] = useState([]);
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [bsvPrice, setBsvPrice] = useState(null);
+  const [priceError, setPriceError] = useState(null);
 
   useEffect(() => {
     const fetchBsvPrice = async () => {
       try {
+        console.log('Fetching BSV price with key:', process.env.REACT_APP_COINGECKO_API_KEY ? 'Set' : 'Missing');
         const response = await axios.get(
           'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin-sv&vs_currencies=usd',
           {
@@ -22,9 +24,17 @@ function App() {
             }
           }
         );
+        console.log('CoinGecko response:', response.data);
+        if (!response.data['bitcoin-sv'] || !response.data['bitcoin-sv'].usd) {
+          throw new Error('Invalid CoinGecko response');
+        }
         setBsvPrice(response.data['bitcoin-sv'].usd);
+        setPriceError(null);
       } catch (error) {
-        console.error('Failed to fetch BSV price:', error.message);
+        console.error('Failed to fetch BSV price:', error.message, error.response?.data);
+        setPriceError('Failed to load BSV price. Using fallback.');
+        // Fallback: $50 USD per BSV
+        setBsvPrice(50);
       }
     };
     fetchBsvPrice();
@@ -42,6 +52,7 @@ function App() {
     <Router>
       <div className="App">
         <h1>DocDime: Micro-media for a Dime</h1>
+        {priceError && <p style={{ color: 'red' }}>{priceError}</p>}
         <DocumentUpload addDocument={addDocument} />
         <Routes>
           <Route
