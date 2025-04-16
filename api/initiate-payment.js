@@ -48,7 +48,7 @@ module.exports = async (req, res) => {
       description: `DocDime purchase: ${sellerHandle}`,
       payments: [
         {
-          destination: sellerHandle, // Seller's HandCash handle
+          destination: sellerHandle,
           currencyCode: 'BSV',
           sendAmount: saleAmount,
         },
