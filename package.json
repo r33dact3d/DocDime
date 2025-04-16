@@ -1,27 +1,45 @@
 {
   "name": "docdime",
   "version": "1.0.0",
+  "private": true,
   "dependencies": {
+    "@handcash/handcash-connect": "^0.9.0",
+    "axios": "^1.6.7",
+    "crypto-js": "^4.2.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "bsv": "^1.5.6",
-    "@handcash/handcash-connect": "^0.5.0",
+    "react-router-dom": "^6.22.0"
+  },
+  "devDependencies": {
     "assert": "^2.1.0",
     "buffer": "^6.0.3",
     "crypto-browserify": "^3.12.0",
-    "stream-browserify": "^3.0.0",
-    "react-router-dom": "^6.11.2",
     "process": "^0.11.10",
-    "crypto-js": "^4.2.0",
-    "axios": "^1.6.8"
+    "react-app-rewired": "^2.2.1",
+    "stream-browserify": "^3.0.0",
+    "webpack": "^5.90.0"
   },
   "scripts": {
     "start": "react-app-rewired start",
-    "build": "react-app-rewired build"
+    "build": "react-app-rewired build",
+    "test": "react-app-rewired test",
+    "eject": "react-scripts eject"
   },
-  "devDependencies": {
-    "react-scripts": "^5.0.1",
-    "react-app-rewired": "^2.2.1",
-    "webpack": "^5.91.0"
+  "eslintConfig": {
+    "extends": [
+      "react-app"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }
