@@ -13,11 +13,11 @@ module.exports = async (req, res) => {
       return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const { priceInBsv, authToken } = req.body;
+    const { priceInBsv, authToken, sellerHandle } = req.body;
 
-    if (!priceInBsv || !authToken) {
+    if (!priceInBsv || !authToken || !sellerHandle) {
       console.error('Missing parameters:', req.body);
-      return res.status(400).json({ error: 'Missing priceInBsv or authToken' });
+      return res.status(400).json({ error: 'Missing priceInBsv, authToken, or sellerHandle' });
     }
 
     // Validate priceInBsv
@@ -27,7 +27,7 @@ module.exports = async (req, res) => {
       return res.status(400).json({ error: 'Invalid payment amount' });
     }
 
-    console.log('Payment amount:', amount);
+    console.log('Payment amount:', amount, 'Seller:', sellerHandle);
 
     // Initialize HandCash client
     const handCashConnect = new HandCashConnect({
@@ -35,17 +35,27 @@ module.exports = async (req, res) => {
       appSecret: process.env.HANDCASH_APP_SECRET,
     });
 
-    // Get account with auth token
+    // Get buyer account with auth token
     const account = handCashConnect.getAccountFromAuthToken(authToken);
+
+    // Calculate fee (5%) and sale price
+    const feeRate = 0.05;
+    const feeAmount = amount * feeRate;
+    const saleAmount = amount - feeAmount;
 
     // Create payment parameters
     const paymentParameters = {
-      description: 'DocDime purchase',
+      description: `DocDime purchase: ${sellerHandle}`,
       payments: [
         {
-          destination: 'styraks@handcash.io', // Confirm this is valid
+          destination: sellerHandle, // Seller's HandCash handle
           currencyCode: 'BSV',
-          sendAmount: amount,
+          sendAmount: saleAmount,
+        },
+        {
+          destination: 'app@docdime.io', // DocDime fee wallet (confirm handle)
+          currencyCode: 'BSV',
+          sendAmount: feeAmount,
         },
       ],
       redirectUrls: {
