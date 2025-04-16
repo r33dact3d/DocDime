@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 function PaymentModal({ document, onClose, bsvPrice, userAuthToken, onLogin }) {
@@ -10,12 +10,12 @@ function PaymentModal({ document, onClose, bsvPrice, userAuthToken, onLogin }) {
   const handleConnect = async () => {
     try {
       const response = await axios.get('/api/handcash-auth', {
-        params: { redirectUrl: window.location.href },
+        params: { redirectUrl: 'https://doc-dime-2.vercel.app/auth-callback' },
       });
-      window.location.href = response.data.redirectUrl; // Redirect to HandCash login
+      window.location.href = response.data.redirectUrl; // Redirect to HandCash
     } catch (err) {
       setError('Failed to connect with HandCash.');
-      console.error('HandCash connect error:', err.message);
+      console.error('HandCash connect error:', err.message, err.response?.data);
     }
   };
 
@@ -28,7 +28,7 @@ function PaymentModal({ document, onClose, bsvPrice, userAuthToken, onLogin }) {
         const response = await axios.get('/api/handcash-profile', {
           params: { authToken },
         });
-        onLogin(authToken); // Store in App.js
+        onLogin(authToken);
       } catch (err) {
         setError('Failed to fetch HandCash profile. Please try again.');
         console.error('Profile error:', err.message, err.response?.data);
@@ -64,7 +64,7 @@ function PaymentModal({ document, onClose, bsvPrice, userAuthToken, onLogin }) {
     }
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     handleCallback();
   }, []);
 
@@ -82,7 +82,10 @@ function PaymentModal({ document, onClose, bsvPrice, userAuthToken, onLogin }) {
       )}
       {userAuthToken && <p>Connected for payment</p>}
       {error && <p style={{ color: 'red' }}>{error}</p>}
-      <button onClick={handlePayment} disabled={loading || !bsvPrice || !userAuthToken}>
+      <button
+        onClick={handlePayment}
+        disabled={loading || !bsvPrice || !userAuthToken}
+      >
         {loading ? 'Processing...' : 'Pay with HandCash'}
       </button>
       <p style={{ color: 'gray' }}>
