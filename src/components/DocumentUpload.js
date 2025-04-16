@@ -32,8 +32,8 @@ function DocumentUpload({ addDocument, onLogin }) {
         setSellerHandle(response.data.handle);
         onLogin(authToken); // Store in App.js
       } catch (err) {
-        setError('Failed to fetch HandCash profile.');
-        console.error('Profile error:', err.message);
+        setError('Failed to fetch HandCash profile. Please try again.');
+        console.error('Profile error:', err.message, err.response?.data);
       }
     }
   };
