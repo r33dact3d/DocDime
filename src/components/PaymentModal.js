@@ -1,11 +1,40 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
-function PaymentModal({ document, onClose, bsvPrice, userAuthToken }) {
+function PaymentModal({ document, onClose, bsvPrice, userAuthToken, onLogin }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const priceInBsv = bsvPrice ? (document.price / bsvPrice).toFixed(8) : 'Loading...';
+
+  const handleConnect = async () => {
+    try {
+      const response = await axios.get('/api/handcash-auth', {
+        params: { redirectUrl: window.location.href },
+      });
+      window.location.href = response.data.redirectUrl; // Redirect to HandCash login
+    } catch (err) {
+      setError('Failed to connect with HandCash.');
+      console.error('HandCash connect error:', err.message);
+    }
+  };
+
+  // Handle callback after HandCash redirect
+  const handleCallback = async () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const authToken = urlParams.get('authToken');
+    if (authToken) {
+      try {
+        const response = await axios.get('/api/handcash-profile', {
+          params: { authToken },
+        });
+        onLogin(authToken); // Store in App.js
+      } catch (err) {
+        setError('Failed to fetch HandCash profile. Please try again.');
+        console.error('Profile error:', err.message, err.response?.data);
+      }
+    }
+  };
 
   const handlePayment = async () => {
     if (!bsvPrice) {
@@ -31,9 +60,13 @@ function PaymentModal({ document, onClose, bsvPrice, userAuthToken }) {
         err.response?.data?.error || 'Payment initiation failed. Please try again.'
       );
       setLoading(false);
-      console.error('Payment error:', err.message);
+      console.error('Payment error:', err.message, err.response?.data);
     }
   };
+
+  React.useEffect(() => {
+    handleCallback();
+  }, []);
 
   return (
     <div className="modal">
@@ -42,10 +75,19 @@ function PaymentModal({ document, onClose, bsvPrice, userAuthToken }) {
         Price: ${document.price.toFixed(2)} USD{' '}
         {bsvPrice ? `(${priceInBsv} BSV)` : '(Loading...)'}
       </p>
+      {!userAuthToken && (
+        <button type="button" onClick={handleConnect}>
+          Connect with HandCash
+        </button>
+      )}
+      {userAuthToken && <p>Connected for payment</p>}
       {error && <p style={{ color: 'red' }}>{error}</p>}
-      <button onClick={handlePayment} disabled={loading || !bsvPrice}>
+      <button onClick={handlePayment} disabled={loading || !bsvPrice || !userAuthToken}>
         {loading ? 'Processing...' : 'Pay with HandCash'}
       </button>
+      <p style={{ color: 'gray' }}>
+        Download available after BSV blockchain integration.
+      </p>
       <button onClick={onClose}>Cancel</button>
     </div>
   );
