@@ -8,15 +8,25 @@ function DocumentUpload({ addDocument, onLogin }) {
   const [error, setError] = useState('');
   const [sellerHandle, setSellerHandle] = useState(null);
 
+  // Restore file/price from localStorage
+  useEffect(() => {
+    const savedFile = localStorage.getItem('uploadFile');
+    const savedPrice = localStorage.getItem('uploadPrice');
+    if (savedPrice) setPrice(savedPrice);
+    // File input can't be set programmatically, but price persists
+  }, []);
+
   const handleConnect = async () => {
     try {
+      // Save price to localStorage (file handled via input)
+      if (price) localStorage.setItem('uploadPrice', price);
       const response = await axios.get('/api/handcash-auth', {
-        params: { redirectUrl: window.location.href },
+        params: { redirectUrl: 'https://doc-dime-2.vercel.app/auth-callback' },
       });
-      window.location.href = response.data.redirectUrl; // Redirect to HandCash login
+      window.location.href = response.data.redirectUrl; // Redirect to HandCash
     } catch (err) {
       setError('Failed to connect with HandCash.');
-      console.error('HandCash connect error:', err.message);
+      console.error('HandCash connect error:', err.message, err.response?.data);
     }
   };
 
@@ -30,7 +40,8 @@ function DocumentUpload({ addDocument, onLogin }) {
           params: { authToken },
         });
         setSellerHandle(response.data.handle);
-        onLogin(authToken); // Store in App.js
+        onLogin(authToken);
+        localStorage.removeItem('uploadPrice'); // Clear after login
       } catch (err) {
         setError('Failed to fetch HandCash profile. Please try again.');
         console.error('Profile error:', err.message, err.response?.data);
@@ -41,11 +52,16 @@ function DocumentUpload({ addDocument, onLogin }) {
   const handleFileChange = (event) => {
     setFile(event.target.files[0]);
     setError('');
+    // Save file name to localStorage (not file itself)
+    if (event.target.files[0]) {
+      localStorage.setItem('uploadFile', event.target.files[0].name);
+    }
   };
 
   const handlePriceChange = (event) => {
     setPrice(event.target.value);
     setError('');
+    localStorage.setItem('uploadPrice', event.target.value);
   };
 
   const handleSubmit = async (event) => {
@@ -68,13 +84,15 @@ function DocumentUpload({ addDocument, onLogin }) {
       const hash = CryptoJS.SHA256(fileContent).toString();
       addDocument({
         name: file.name,
-        price: parseFloat(price), // Price in USD
+        price: parseFloat(price),
         hash,
-        sellerHandle, // Store seller's HandCash handle
+        sellerHandle,
       });
       setFile(null);
       setPrice('');
       setError('');
+      localStorage.removeItem('uploadFile');
+      localStorage.removeItem('uploadPrice');
     };
     reader.readAsDataURL(file);
   };
