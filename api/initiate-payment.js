@@ -50,12 +50,13 @@ module.exports = async (req, res) => {
         {
           destination: sellerHandle, // Seller's HandCash handle
           currencyCode: 'BSV',
-          sendAmount: saleAmount,
+          send, // Changed from sendAmount to amount to ensure compatability
+          amount: saleAmount,
         },
         {
-          destination: 'app@docdime.io', // DocDime fee wallet (confirm handle)
+          destination: '67f01aeeade9b3f0e486b8b9', // DocDime fee wallet
           currencyCode: 'BSV',
-          sendAmount: feeAmount,
+          amount: feeAmount,
         },
       ],
       redirectUrls: {
