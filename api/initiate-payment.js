@@ -50,13 +50,12 @@ module.exports = async (req, res) => {
         {
           destination: sellerHandle, // Seller's HandCash handle
           currencyCode: 'BSV',
-          send, // Changed from sendAmount to amount to ensure compatability
-          amount: saleAmount,
+          sendAmount: saleAmount,
         },
         {
           destination: '67f01aeeade9b3f0e486b8b9', // DocDime fee wallet
           currencyCode: 'BSV',
-          amount: feeAmount,
+          sendAmount: feeAmount,
         },
       ],
       redirectUrls: {
@@ -80,6 +79,7 @@ module.exports = async (req, res) => {
     console.error('Error in initiate-payment:', {
       message: error.message,
       stack: error.stack,
+      response: error.response?.data,
     });
     if (error.message.includes('spend limit')) {
       return res.status(403).json({ error: 'Request exceeds user’s spend limit' });
