@@ -1,9 +1,19 @@
 {
-  "functions": {
-    "api/*.js": {
-      "memory": 128,
-      "maxDuration": 10,
-      "includeFiles": "node_modules/**/*"
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/node"
     }
-  }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ],
+  "cache": "none"
 }
