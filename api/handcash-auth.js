@@ -22,6 +22,7 @@ module.exports = async (req, res) => {
     console.error('Error in handcash-auth:', {
       message: error.message,
       stack: error.stack,
+      response: error.response?.data,
     });
     res.status(500).json({ error: 'Internal server error' });
   }
