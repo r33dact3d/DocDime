@@ -21,7 +21,7 @@ function App() {
           'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin-sv&vs_currencies=usd',
           {
             headers: {
-              'Authorization': `Bearer ${process.env.REACT_APP_COINGECKO_API_KEY}`, // Updated header
+              'Authorization': `Bearer ${process.env.REACT_APP_COINGECKO_API_KEY}`,
             },
           }
         );
