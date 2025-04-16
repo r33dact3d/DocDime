@@ -13,14 +13,10 @@
     "buffer": "^6.0.3",
     "process": "^0.11.10"
   },
-  "devDependencies": {
-    "react-app-rewired": "^2.2.1",
-    "webpack": "^5.90.0"
-  },
   "scripts": {
-    "start": "react-app-rewired start",
-    "build": "react-app-rewired build",
-    "test": "react-app-rewired test",
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
