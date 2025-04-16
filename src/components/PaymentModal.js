@@ -16,12 +16,17 @@ function PaymentModal({ document, onClose, bsvPrice }) {
     setLoading(true);
     setError(null);
     try {
+      // TODO: Replace with actual auth token from user login
+      const authToken = 'USER_AUTH_TOKEN'; // Placeholder, confirm source
       const response = await axios.post('/api/initiate-payment', {
-        priceInBsv
+        priceInBsv,
+        authToken,
       });
       window.location.href = response.data.paymentRequestUrl;
     } catch (err) {
-      setError('Payment initiation failed. Please try again.');
+      setError(
+        err.response?.data?.error || 'Payment initiation failed. Please try again.'
+      );
       setLoading(false);
       console.error('Payment error:', err.message);
     }
