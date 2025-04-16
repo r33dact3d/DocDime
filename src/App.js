@@ -18,13 +18,8 @@ function App() {
       try {
         console.log('Fetching BSV price, attempt:', attempt);
         const response = await axios.get(
-          'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin-sv&vs_currencies=usd',
-          {
-            headers: {
-              'Authorization': `Bearer ${process.env.REACT_APP_COINGECKO_API_KEY}`,
-            },
-          }
-        );
+          'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin-sv&vs_currencies=usd'
+        ); // Public endpoint, no key
         console.log('CoinGecko response:', {
           status: response.status,
           data: response.data,
@@ -46,6 +41,7 @@ function App() {
           setTimeout(() => fetchBsvPrice(attempt + 1, maxAttempts), delay);
         } else {
           setPriceError('Using fallback BSV price ($50).');
+          setBsvPrice(50); // Explicit fallback
         }
       }
     };
@@ -81,7 +77,7 @@ function App() {
               />
             }
           />
-          <Route path="/success" element={<div>Payment Successful!</div>} />
+          <Route path="/success" element={<div>Payment Successful! File download pending BSV integration.</div>} />
           <Route path="/decline" element={<div>Payment Declined.</div>} />
         </Routes>
         {selectedDocument && (
@@ -90,6 +86,7 @@ function App() {
             onClose={() => setSelectedDocument(null)}
             bsvPrice={bsvPrice}
             userAuthToken={userAuthToken}
+            onLogin={handleLogin}
           />
         )}
       </div>
