@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
-function PaymentModal({ document, onClose, bsvPrice }) {
+function PaymentModal({ document, onClose, bsvPrice, userAuthToken }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -12,17 +12,20 @@ function PaymentModal({ document, onClose, bsvPrice }) {
       setError('BSV price not available. Please try again later.');
       return;
     }
+    if (!userAuthToken) {
+      setError('Please connect with HandCash to pay.');
+      return;
+    }
 
     setLoading(true);
     setError(null);
     try {
-      // TODO: Replace with actual auth token from user login
-      const authToken = 'USER_AUTH_TOKEN'; // Placeholder, confirm source
       const response = await axios.post('/api/initiate-payment', {
         priceInBsv,
-        authToken,
+        authToken: userAuthToken,
+        sellerHandle: document.sellerHandle,
       });
-      window.location.href = response.data.paymentRequestUrl;
+      window.location.href = response.data.paymentRequestUrl; // Triggers HandCash dialog
     } catch (err) {
       setError(
         err.response?.data?.error || 'Payment initiation failed. Please try again.'
