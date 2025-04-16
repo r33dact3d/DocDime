@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import CryptoJS from 'crypto-js';
-import { HandCashConnect } from '@handcash/handcash-connect';
+import axios from 'axios';
 
 function DocumentUpload({ addDocument, onLogin }) {
   const [file, setFile] = useState(null);
@@ -8,29 +8,33 @@ function DocumentUpload({ addDocument, onLogin }) {
   const [error, setError] = useState('');
   const [sellerHandle, setSellerHandle] = useState(null);
 
-  const handCashConnect = new HandCashConnect({
-    appId: process.env.REACT_APP_HANDCASH_APP_ID,
-  });
-
   const handleConnect = async () => {
     try {
-      const redirectUrl = handCashConnect.getRedirectionUrl();
-      window.location.href = redirectUrl; // Redirect to HandCash login
+      const response = await axios.get('/api/handcash-auth', {
+        params: { redirectUrl: window.location.href },
+      });
+      window.location.href = response.data.redirectUrl; // Redirect to HandCash login
     } catch (err) {
       setError('Failed to connect with HandCash.');
       console.error('HandCash connect error:', err.message);
     }
   };
 
-  // Handle callback after HandCash redirect (assumes redirect back to app)
+  // Handle callback after HandCash redirect
   const handleCallback = async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const authToken = urlParams.get('authToken');
     if (authToken) {
-      const account = handCashConnect.getAccountFromAuthToken(authToken);
-      const profile = await account.profile.getCurrentProfile();
-      setSellerHandle(profile.publicInfo.handle);
-      onLogin(authToken); // Store in App.js
+      try {
+        const response = await axios.get('/api/handcash-profile', {
+          params: { authToken },
+        });
+        setSellerHandle(response.data.handle);
+        onLogin(authToken); // Store in App.js
+      } catch (err) {
+        setError('Failed to fetch HandCash profile.');
+        console.error('Profile error:', err.message);
+      }
     }
   };
 
@@ -75,8 +79,7 @@ function DocumentUpload({ addDocument, onLogin }) {
     reader.readAsDataURL(file);
   };
 
-  // Check for authToken on load (after redirect)
-  React.useEffect(() => {
+  useEffect(() => {
     handleCallback();
   }, []);
 
