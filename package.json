@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "dependencies": {
-    "@handcash/handcash-connect": "^0.10.0",
+    "@handcash/handcash-connect": "^0.8.11",
     "axios": "^1.6.7",
     "crypto-js": "^4.2.0",
     "react": "^18.2.0",
