@@ -1,4 +1,4 @@
-const axios = require('axios');
+const { HandCashConnect } = require('@handcash/handcash-connect');
 
 module.exports = async (req, res) => {
   try {
@@ -7,30 +7,17 @@ module.exports = async (req, res) => {
     // Log request details
     console.log('Request:', { method: req.method, body: req.body });
 
-    // Log environment variables presence
-    console.log('App ID:', process.env.HANDCASH_APP_ID ? 'Set' : 'Missing');
-    console.log('App Secret:', process.env.HANDCASH_APP_SECRET ? 'Set' : 'Missing');
-
     // Ensure the request is a POST
     if (req.method !== 'POST') {
       console.error('Invalid method:', req.method);
       return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const { priceInBsv } = req.body;
+    const { priceInBsv, authToken } = req.body;
 
-    if (!priceInBsv) {
-      console.error('No priceInBsv provided:', req.body);
-      return res.status(400).json({ error: 'Missing priceInBsv' });
-    }
-
-    // Verify environment variables
-    if (!process.env.HANDCASH_APP_ID || !process.env.HANDCASH_APP_SECRET) {
-      console.error('HandCash env vars missing:', {
-        hasAppId: !!process.env.HANDCASH_APP_ID,
-        hasAppSecret: !!process.env.HANDCASH_APP_SECRET
-      });
-      return res.status(500).json({ error: 'HandCash configuration missing' });
+    if (!priceInBsv || !authToken) {
+      console.error('Missing parameters:', req.body);
+      return res.status(400).json({ error: 'Missing priceInBsv or authToken' });
     }
 
     // Validate priceInBsv
@@ -42,52 +29,52 @@ module.exports = async (req, res) => {
 
     console.log('Payment amount:', amount);
 
-    // Create payment request using HandCash Payment Requests API
+    // Initialize HandCash client
+    const handCashConnect = new HandCashConnect({
+      appId: process.env.HANDCASH_APP_ID,
+      appSecret: process.env.HANDCASH_APP_SECRET,
+    });
+
+    // Get account with auth token
+    const account = handCashConnect.getAccountFromAuthToken(authToken);
+
+    // Create payment parameters
     const paymentParameters = {
+      description: 'DocDime purchase',
       payments: [
         {
-          destination: 'styraks@handcash.io',
+          destination: 'styraks@handcash.io', // Confirm this is valid
           currencyCode: 'BSV',
-          amount: amount
-        }
+          sendAmount: amount,
+        },
       ],
       redirectUrls: {
         success: 'https://doc-dime-2.vercel.app/success',
-        decline: 'https://doc-dime-2.vercel.app/decline'
-      }
+        decline: 'https://doc-dime-2.vercel.app/decline',
+      },
     };
 
     console.log('Payment request params:', JSON.stringify(paymentParameters));
 
-    // Send HTTP POST to HandCash Payment Requests API
-    const response = await axios.post(
-      'https://cloud.handcash.io/v2/paymentRequests',
-      paymentParameters,
-      {
-        headers: {
-          'app-id': process.env.HANDCASH_APP_ID,
-          'app-secret': process.env.HANDCASH_APP_SECRET,
-          'Content-Type': 'application/json'
-        }
-      }
-    );
+    // Execute payment
+    const paymentResult = await account.wallet.pay(paymentParameters);
 
-    console.log('HandCash API response:', response.data);
+    console.log('HandCash payment result:', paymentResult);
 
     // Send response
     res.status(200).json({
-      paymentRequestUrl: response.data.paymentRequestUrl
+      paymentRequestUrl: paymentResult.paymentRequestUrl || paymentResult.transactionId,
     });
   } catch (error) {
     console.error('Error in initiate-payment:', {
       message: error.message,
-      stack: error.stack
+      stack: error.stack,
     });
-    if (error.response) {
-      console.error('HandCash API error:', {
-        status: error.response.status,
-        data: error.response.data
-      });
+    if (error.message.includes('spend limit')) {
+      return res.status(403).json({ error: 'Request exceeds user’s spend limit' });
+    }
+    if (error.message.includes('invalid auth token')) {
+      return res.status(401).json({ error: 'Invalid auth token' });
     }
     res.status(500).json({ error: 'Internal server error' });
   }
