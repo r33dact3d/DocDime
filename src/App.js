@@ -11,6 +11,7 @@ function App() {
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [bsvPrice, setBsvPrice] = useState(50); // Immediate fallback
   const [priceError, setPriceError] = useState(null);
+  const [userAuthToken, setUserAuthToken] = useState(null); // Store buyer's authToken
 
   useEffect(() => {
     const fetchBsvPrice = async (attempt = 1, maxAttempts = 3) => {
@@ -20,13 +21,13 @@ function App() {
           'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin-sv&vs_currencies=usd',
           {
             headers: {
-              'x-cg-demo-api-key': process.env.REACT_APP_COINGECKO_API_KEY
-            }
+              'Authorization': `Bearer ${process.env.REACT_APP_COINGECKO_API_KEY}`, // Updated header
+            },
           }
         );
         console.log('CoinGecko response:', {
           status: response.status,
-          data: response.data
+          data: response.data,
         });
         if (!response.data['bitcoin-sv'] || !response.data['bitcoin-sv'].usd) {
           throw new Error('Invalid CoinGecko response');
@@ -37,7 +38,7 @@ function App() {
         console.error('Failed to fetch BSV price:', {
           message: error.message,
           status: error.response?.status,
-          data: error.response?.data
+          data: error.response?.data,
         });
         if (error.response?.status === 429 && attempt < maxAttempts) {
           const delay = Math.pow(2, attempt) * 1000; // Exponential backoff
@@ -59,12 +60,16 @@ function App() {
     setSelectedDocument(document);
   };
 
+  const handleLogin = (authToken) => {
+    setUserAuthToken(authToken); // Store buyer's authToken
+  };
+
   return (
     <Router>
       <div className="App">
         <h1>DocDime: Micro-media for a Dime</h1>
         {priceError && <p style={{ color: 'red' }}>{priceError}</p>}
-        <DocumentUpload addDocument={addDocument} />
+        <DocumentUpload addDocument={addDocument} onLogin={handleLogin} />
         <Routes>
           <Route
             path="/"
@@ -84,6 +89,7 @@ function App() {
             document={selectedDocument}
             onClose={() => setSelectedDocument(null)}
             bsvPrice={bsvPrice}
+            userAuthToken={userAuthToken}
           />
         )}
       </div>
