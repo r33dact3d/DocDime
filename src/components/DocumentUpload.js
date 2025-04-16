@@ -1,10 +1,38 @@
 import React, { useState } from 'react';
 import CryptoJS from 'crypto-js';
+import { HandCashConnect } from '@handcash/handcash-connect';
 
-function DocumentUpload({ addDocument }) {
+function DocumentUpload({ addDocument, onLogin }) {
   const [file, setFile] = useState(null);
   const [price, setPrice] = useState('');
   const [error, setError] = useState('');
+  const [sellerHandle, setSellerHandle] = useState(null);
+
+  const handCashConnect = new HandCashConnect({
+    appId: process.env.REACT_APP_HANDCASH_APP_ID,
+  });
+
+  const handleConnect = async () => {
+    try {
+      const redirectUrl = handCashConnect.getRedirectionUrl();
+      window.location.href = redirectUrl; // Redirect to HandCash login
+    } catch (err) {
+      setError('Failed to connect with HandCash.');
+      console.error('HandCash connect error:', err.message);
+    }
+  };
+
+  // Handle callback after HandCash redirect (assumes redirect back to app)
+  const handleCallback = async () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const authToken = urlParams.get('authToken');
+    if (authToken) {
+      const account = handCashConnect.getAccountFromAuthToken(authToken);
+      const profile = await account.profile.getCurrentProfile();
+      setSellerHandle(profile.publicInfo.handle);
+      onLogin(authToken); // Store in App.js
+    }
+  };
 
   const handleFileChange = (event) => {
     setFile(event.target.files[0]);
@@ -18,8 +46,8 @@ function DocumentUpload({ addDocument }) {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    if (!file || !price) {
-      setError('Please select a file and set a price.');
+    if (!file || !price || !sellerHandle) {
+      setError('Please connect with HandCash, select a file, and set a price.');
       return;
     }
 
@@ -37,7 +65,8 @@ function DocumentUpload({ addDocument }) {
       addDocument({
         name: file.name,
         price: parseFloat(price), // Price in USD
-        hash
+        hash,
+        sellerHandle, // Store seller's HandCash handle
       });
       setFile(null);
       setPrice('');
@@ -46,8 +75,19 @@ function DocumentUpload({ addDocument }) {
     reader.readAsDataURL(file);
   };
 
+  // Check for authToken on load (after redirect)
+  React.useEffect(() => {
+    handleCallback();
+  }, []);
+
   return (
     <form onSubmit={handleSubmit}>
+      {!sellerHandle && (
+        <button type="button" onClick={handleConnect}>
+          Connect with HandCash
+        </button>
+      )}
+      {sellerHandle && <p>Connected as {sellerHandle}</p>}
       <input
         type="file"
         accept=".pdf,.png,.jpg,.mp4,.zip,.rar,.mp3"
