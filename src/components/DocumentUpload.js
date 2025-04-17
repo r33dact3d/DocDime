@@ -2,11 +2,17 @@ import React, { useState, useEffect } from 'react';
 import CryptoJS from 'crypto-js';
 import axios from 'axios';
 
+// Constants
+const MAX_FILE_SIZE = 1024 * 1024; // 1MB in bytes
+const MIN_PRICE = 0.10; // Minimum price in USD
+
 function DocumentUpload({ addDocument, onLogin }) {
   const [file, setFile] = useState(null);
   const [price, setPrice] = useState('');
   const [error, setError] = useState('');
   const [sellerHandle, setSellerHandle] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   // Restore file/price from localStorage
   useEffect(() => {
@@ -21,7 +27,7 @@ function DocumentUpload({ addDocument, onLogin }) {
       // Save price to localStorage (file handled via input)
       if (price) localStorage.setItem('uploadPrice', price);
       const response = await axios.get('/api/handcash-auth', {
-        params: { redirectUrl: 'https://doc-dime-2.vercel.app/auth-callback' },
+        params: { redirectUrl: 'http://localhost:3000/auth-callback' },
       });
       window.location.href = response.data.redirectUrl; // Redirect to HandCash
     } catch (err) {
@@ -44,39 +50,82 @@ function DocumentUpload({ addDocument, onLogin }) {
         localStorage.removeItem('uploadPrice'); // Clear after login
       } catch (err) {
         setError('Failed to fetch HandCash profile. Please try again.');
-        console.error('Profile error:', err.message, err.response?.data);
+        console.error('Upload error:', err);
+      } finally {
+        setIsLoading(false);
+        setUploadProgress(0);
       }
     }
   };
 
-  const handleFileChange = (event) => {
-    setFile(event.target.files[0]);
-    setError('');
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+    if (selectedFile) {
+      if (selectedFile.size > MAX_FILE_SIZE) {
+        setError(`File size must be less than 1MB. Current size: ${(selectedFile.size / (1024 * 1024)).toFixed(2)}MB`);
+        e.target.value = ''; // Reset file input
+        return;
+      }
+      setFile(selectedFile);
+      setError('');
+    }
     // Save file name to localStorage (not file itself)
-    if (event.target.files[0]) {
-      localStorage.setItem('uploadFile', event.target.files[0].name);
+    if (e.target.files[0]) {
+      localStorage.setItem('uploadFile', e.target.files[0].name);
     }
   };
 
-  const handlePriceChange = (event) => {
-    setPrice(event.target.value);
-    setError('');
-    localStorage.setItem('uploadPrice', event.target.value);
+  const handlePriceChange = (e) => {
+    const newPrice = parseFloat(e.target.value);
+    if (e.target.value === '') {
+      setPrice('');
+      setError('');
+      return;
+    }
+    if (isNaN(newPrice)) {
+      setError('Please enter a valid price');
+      return;
+    }
+    if (newPrice < MIN_PRICE) {
+      setError(`Minimum price is $${MIN_PRICE.toFixed(2)}`);
+    } else {
+      setError('');
+    }
+    setPrice(e.target.value);
+    localStorage.setItem('uploadPrice', e.target.value);
+  };
+
+  const validateSubmission = () => {
+    if (!file) {
+      setError('Please select a file');
+      return false;
+    }
+    if (!price || isNaN(parseFloat(price))) {
+      setError('Please enter a valid price');
+      return false;
+    }
+    if (parseFloat(price) < MIN_PRICE) {
+      setError(`Minimum price is $${MIN_PRICE.toFixed(2)}`);
+      return false;
+    }
+    if (!sellerHandle) {
+      setError('Please connect with HandCash');
+      return false;
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      setError('File size must be less than 1MB');
+      return false;
+    }
+    return true;
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    if (!file || !price || !sellerHandle) {
-      setError('Please connect with HandCash, select a file, and set a price.');
+    if (!validateSubmission()) {
       return;
     }
-
-    // Validate file size (1MB = 1,048,576 bytes)
-    const maxSize = 1 * 1024 * 1024;
-    if (file.size > maxSize) {
-      setError('File size exceeds 1MB limit.');
-      return;
-    }
+    setIsLoading(true);
+    setUploadProgress(10);
 
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -121,8 +170,19 @@ function DocumentUpload({ addDocument, onLogin }) {
         value={price}
         onChange={handlePriceChange}
       />
-      <button type="submit">Upload</button>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      <button type="submit" disabled={isLoading}>
+        {isLoading ? 'Uploading...' : 'Upload Document'}
+      </button>
+      {error && <p className="error">{error}</p>}
+      {isLoading && (
+        <div className="upload-progress">
+          <div 
+            className="progress-bar" 
+            style={{ width: `${uploadProgress}%` }}
+          />
+          <span>{uploadProgress}%</span>
+        </div>
+      )}
     </form>
   );
 }

@@ -5,6 +5,36 @@
   padding: 20px;
 }
 
+.upload-progress {
+  margin: 10px 0;
+  background-color: #f0f0f0;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+  height: 20px;
+}
+
+.progress-bar {
+  height: 100%;
+  background-color: #4CAF50;
+  transition: width 0.3s ease-in-out;
+}
+
+.upload-progress span {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  color: #000;
+  font-size: 12px;
+}
+
+.error {
+  color: #d32f2f;
+  margin: 10px 0;
+  font-size: 14px;
+}
+
 h1 {
   font-size: 2em;
   margin-bottom: 20px;
@@ -46,7 +76,15 @@ input[type="file"] {
   left: 50%;
   transform: translateX(-50%);
   background: white;
-  padding: 20px;
+  padding: 20px;git add .
+  git commit -m "Latest changes for AI review"
+  git pushgit add .
+  git commit -m "Latest changes for AI review"
+  git pushgit add .
+  git commit -m "Latest changes for AI review"
+  git pushgit add .
+  git commit -m "Latest changes for AI review"
+  git push
   border: 1px solid #000;
   box-shadow: 0 0 10px rgba(0,0,0,0.5);
 }
