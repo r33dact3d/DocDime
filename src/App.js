@@ -12,7 +12,7 @@ function App() {
       try {
         console.log("Fetching BSV price, attempt: 1");
         const response = await axios.get(
-          "[https://api.coingecko.com/api/v3/simple/price?ids=bitcoin-sv&vs_currencies=usd"](https://api.coingecko.com/api/v3/simple/price?ids=bitcoin-sv&vs_currencies=usd")
+          "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin-sv&vs_currencies=usd"
         );
         console.log("CoinGecko response.data:", response.data);
         if (
