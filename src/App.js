@@ -20,7 +20,7 @@ function App() {
 
   return (
     <div className="App">
-      <h1>Bitcoin Cash SV (BSV) Price</h1>
+      <h1>Bitcoin (BSV) Price</h1>
       {price ? (
         <p>Current Price: ${price}</p>
       ) : (
