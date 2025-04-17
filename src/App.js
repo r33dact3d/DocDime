@@ -1,47 +1,31 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+import React, { useEffect, useState } from 'react';
+import './App.css';
 
 function App() {
-  const [bsvPrice, setBsvPrice] = useState(null);
-  const [fetchError, setFetchError] = useState(null);
+  const [price, setPrice] = useState(null);
 
   useEffect(() => {
-    async function fetchBSVPrice() {
-      try {
-        console.log("Fetching BSV price, attempt: 1");
-        const response = await axios.get(
-          "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin-sv&vs_currencies=usd"
-        );
-        console.log("CoinGecko response.data:", response.data);
-        if (
-          response.data &&
-          response.data["bitcoin-sv"] &&
-          typeof response.data["bitcoin-sv"].usd === "number"
-        ) {
-          setBsvPrice(response.data["bitcoin-sv"].usd);
-        } else {
-          setFetchError("Invalid response structure from CoinGecko");
-          console.error("Unexpected CoinGecko response:", response.data);
-        }
-      } catch (error) {
-        setFetchError("Failed to fetch BSV price");
-        console.error("Failed to fetch BSV price:", error);
-      }
-    }
-
-    fetchBSVPrice();
+    const fetchPrice = async () => {
+      const response = await fetch('/api/bsv-price');
+      const data = await response.json();
+      console.log('Backend response.data:', data);
+      setPrice(
+        data &&
+        data['bitcoin-cash-sv'] &&
+        data['bitcoin-cash-sv'].usd
+      );
+    };
+    fetchPrice();
   }, []);
 
   return (
     <div className="App">
-      <h1>DocDime</h1>
-      <p>
-        Current BSV Price:{" "}
-        {bsvPrice !== null ? `$${bsvPrice}` : fetchError || "Loading..."}
-      </p>
-      {/* Example usage of DocumentUpload and PaymentModal */}
-      {/* <DocumentUpload ...props /> */}
-      {/* <PaymentModal ...props /> */}
+      <h1>Bitcoin Cash SV (BCHSV) Price</h1>
+      {price ? (
+        <p>Current Price: ${price}</p>
+      ) : (
+        <p>Loading price...</p>
+      )}
     </div>
   );
 }
