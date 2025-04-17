@@ -1,2 +1,24 @@
+# Dependencies
 node_modules/
+
+# Build
 .vercel
+build/
+dist/
+
+# Environment
+.env
+.env.local
+
+# Personal Notes
+CPS Current*.odt
+*.png
+*.svg
+R.png
+Sed-91-512*
+logo*
+money_dime.png
+
+# IDE
+.vscode/
+.idea/
