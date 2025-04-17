@@ -1,12 +1,17 @@
-require('dotenv').config();
+import 'dotenv/config';
 const COINGECKO_API_KEY = process.env.COINGECKO_API_KEY;
 console.log("COINGECKO_API_KEY:", COINGECKO_API_KEY);
 
-const express = require('express');
-const axios = require('axios');
-const path = require('path');
+import express from 'express';
+import axios from 'axios';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
 const app = express();
-const PORT = process.env.PORT || 5000;
+app.get('/api/bsv-price', async (_, res) => {
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // Backend API endpoint for BSV price
 app.get('/api/bsv-price', async (req, res) => {
@@ -19,7 +24,7 @@ app.get('/api/bsv-price', async (req, res) => {
   } catch (err) {
     console.error("CoinGecko API error:", err);
     res.status(500).json({ error: 'Failed to fetch BSV price' });
-  }
+app.get('*', (_, res) => {
 });
 
 // Serve React frontend
