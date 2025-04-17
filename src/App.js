@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import DocumentUpload from "./components/DocumentUpload";
-import PaymentModal from "./components/PaymentModal";
 
 function App() {
   const [bsvPrice, setBsvPrice] = useState(null);
