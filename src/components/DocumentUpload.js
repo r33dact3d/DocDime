@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState } from "react";
 import axios from "axios";
 
 function DocumentUpload({ sellerHandle, setSellerHandle, onUpload }) {
@@ -54,9 +54,6 @@ function DocumentUpload({ sellerHandle, setSellerHandle, onUpload }) {
       // Handle error
     }
   };
-
-  // If you have a handleCallback function, ensure it's included in the dependency array
-  // For this example, we'll assume there's no handleCallback in useEffect
 
   return (
     <form onSubmit={handleSubmit}>
