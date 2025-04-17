@@ -1,103 +1,50 @@
-import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import axios from 'axios';
-import DocumentUpload from './components/DocumentUpload';
-import DocumentList from './components/DocumentList';
-import PaymentModal from './components/PaymentModal';
-import './App.css';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import DocumentUpload from "./components/DocumentUpload";
+import PaymentModal from "./components/PaymentModal";
 
 function App() {
-  const [documents, setDocuments] = useState([]);
-  const [selectedDocument, setSelectedDocument] = useState(null);
-  const [bsvPrice, setBsvPrice] = useState(50); // Immediate fallback
-  const [priceError, setPriceError] = useState(null);
-  const [userAuthToken, setUserAuthToken] = useState(null); // Store buyer's authToken
+  const [bsvPrice, setBsvPrice] = useState(null);
+  const [fetchError, setFetchError] = useState(null);
 
   useEffect(() => {
-    const fetchBsvPrice = async (attempt = 1, maxAttempts = 3) => {
+    async function fetchBSVPrice() {
       try {
-        console.log('Fetching BSV price, attempt:', attempt);
+        console.log("Fetching BSV price, attempt: 1");
         const response = await axios.get(
-          'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin-sv&vs_currencies=usd'
+          "[https://api.coingecko.com/api/v3/simple/price?ids=bitcoin-sv&vs_currencies=usd"](https://api.coingecko.com/api/v3/simple/price?ids=bitcoin-sv&vs_currencies=usd")
         );
-        console.log('CoinGecko response:', {
-          status: response.status,
-          data: response.data,
-        });
-        if (!response.data['bitcoin-sv'] || !response.data['bitcoin-sv'].usd) {
-          throw new Error('Invalid CoinGecko response');
-        }
-        setBsvPrice(response.data['bitcoin-sv'].usd);
-        setPriceError(null);
-      } catch (error) {
-        console.error('Failed to fetch BSV price:', {
-          message: error.message,
-          status: error.response?.status,
-          data: error.response?.data,
-        });
-        if (error.response?.status === 429 && attempt < maxAttempts) {
-          const delay = Math.pow(2, attempt) * 1000;
-          console.log(`Rate limit hit, retrying in ${delay}ms...`);
-          setTimeout(() => fetchBsvPrice(attempt + 1, maxAttempts), delay);
+        console.log("CoinGecko response.data:", response.data);
+        if (
+          response.data &&
+          response.data["bitcoin-sv"] &&
+          typeof response.data["bitcoin-sv"].usd === "number"
+        ) {
+          setBsvPrice(response.data["bitcoin-sv"].usd);
         } else {
-          setPriceError('Using fallback BSV price ($50).');
-          setBsvPrice(50);
+          setFetchError("Invalid response structure from CoinGecko");
+          console.error("Unexpected CoinGecko response:", response.data);
         }
+      } catch (error) {
+        setFetchError("Failed to fetch BSV price");
+        console.error("Failed to fetch BSV price:", error);
       }
-    };
-    fetchBsvPrice();
+    }
+
+    fetchBSVPrice();
   }, []);
 
-  const addDocument = (document) => {
-    setDocuments([...documents, document]);
-  };
-
-  const handleBuy = (document) => {
-    setSelectedDocument(document);
-  };
-
-  const handleLogin = (authToken) => {
-    setUserAuthToken(authToken);
-  };
-
   return (
-    <Router>
-      <div className="App">
-        <h1>DocDime: Micro-media for a Dime</h1>
-        {priceError && <p style={{ color: 'red' }}>{priceError}</p>}
-        <DocumentUpload addDocument={addDocument} onLogin={handleLogin} />
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <DocumentList
-                documents={documents}
-                handleBuy={handleBuy}
-                bsvPrice={bsvPrice}
-              />
-            }
-          />
-          <Route
-            path="/auth-callback"
-            element={<DocumentUpload addDocument={addDocument} onLogin={handleLogin} />}
-          />
-          <Route
-            path="/success"
-            element={<div>Payment Successful! File download pending BSV integration.</div>}
-          />
-          <Route path="/decline" element={<div>Payment Declined.</div>} />
-        </Routes>
-        {selectedDocument && (
-          <PaymentModal
-            document={selectedDocument}
-            onClose={() => setSelectedDocument(null)}
-            bsvPrice={bsvPrice}
-            userAuthToken={userAuthToken}
-            onLogin={handleLogin}
-          />
-        )}
-      </div>
-    </Router>
+    <div className="App">
+      <h1>DocDime</h1>
+      <p>
+        Current BSV Price:{" "}
+        {bsvPrice !== null ? `$${bsvPrice}` : fetchError || "Loading..."}
+      </p>
+      {/* Example usage of DocumentUpload and PaymentModal */}
+      {/* <DocumentUpload ...props /> */}
+      {/* <PaymentModal ...props /> */}
+    </div>
   );
 }
 
