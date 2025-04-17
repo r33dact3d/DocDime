@@ -2,10 +2,7 @@ const axios = require('axios');
 
 module.exports = async (req, res) => {
   const COINGECKO_API_KEY = process.env.COINGECKO_API_KEY;
-  let url = "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin-cash-sv&vs_currencies=usd";
-  if (COINGECKO_API_KEY) {
-    url += `&x_cg_demo_api_key=${COINGECKO_API_KEY}`;
-  }
+  const url = `https://api.coingecko.com/api/v3/simple/price?ids=bitcoin-cash-sv&vs_currencies=usd&x_cg_demo_api_key=${COINGECKO_API_KEY}`;
   try {
     const response = await axios.get(url);
     res.status(200).json(response.data);
