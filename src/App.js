@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import DocumentUpload from "./components/DocumentUpload";
-import PaymentModal from "./components/PaymentModal";
 
 function App() {
   const [bsvPrice, setBsvPrice] = useState(null);
@@ -10,11 +8,9 @@ function App() {
   useEffect(() => {
     async function fetchBSVPrice() {
       try {
-        console.log("Fetching BSV price, attempt: 1");
         const response = await axios.get(
           "[https://api.coingecko.com/api/v3/simple/price?ids=bitcoin-sv&vs_currencies=usd"](https://api.coingecko.com/api/v3/simple/price?ids=bitcoin-sv&vs_currencies=usd")
         );
-        console.log("CoinGecko response.data:", response.data);
         if (
           response.data &&
           response.data["bitcoin-sv"] &&
@@ -23,14 +19,11 @@ function App() {
           setBsvPrice(response.data["bitcoin-sv"].usd);
         } else {
           setFetchError("Invalid response structure from CoinGecko");
-          console.error("Unexpected CoinGecko response:", response.data);
         }
       } catch (error) {
         setFetchError("Failed to fetch BSV price");
-        console.error("Failed to fetch BSV price:", error);
       }
     }
-
     fetchBSVPrice();
   }, []);
 
@@ -41,9 +34,6 @@ function App() {
         Current BSV Price:{" "}
         {bsvPrice !== null ? `$${bsvPrice}` : fetchError || "Loading..."}
       </p>
-      {/* Example usage of DocumentUpload and PaymentModal */}
-      {/* <DocumentUpload ...props /> */}
-      {/* <PaymentModal ...props /> */}
     </div>
   );
 }
