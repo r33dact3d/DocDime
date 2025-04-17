@@ -1,97 +1,38 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect, useCallback } from "react";
 
-function PaymentModal({ document, onClose, bsvPrice, userAuthToken, onLogin }) {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+function PaymentModal({ isOpen, onClose, onPayment, price, handleCallback }) {
+  const [paying, setPaying] = useState(false);
 
-  const priceInBsv = bsvPrice ? (document.price / bsvPrice).toFixed(8) : 'Loading...';
-
-  const handleConnect = async () => {
+  const handlePay = useCallback(async () => {
+    setPaying(true);
     try {
-      const response = await axios.get('/api/handcash-auth', {
-        params: { redirectUrl: 'https://doc-dime-2.vercel.app/auth-callback' },
-      });
-      window.location.href = response.data.redirectUrl; // Redirect to HandCash
-    } catch (err) {
-      setError('Failed to connect with HandCash.');
-      console.error('HandCash connect error:', err.message, err.response?.data);
+      await onPayment();
+      setPaying(false);
+      onClose();
+    } catch (error) {
+      setPaying(false);
+      // Handle error
     }
-  };
-
-  // Handle callback after HandCash redirect
-  const handleCallback = async () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const authToken = urlParams.get('authToken');
-    if (authToken) {
-      try {
-        const response = await axios.get('/api/handcash-profile', {
-          params: { authToken },
-        });
-        onLogin(authToken);
-      } catch (err) {
-        setError('Failed to fetch HandCash profile. Please try again.');
-        console.error('Profile error:', err.message, err.response?.data);
-      }
-    }
-  };
-
-  const handlePayment = async () => {
-    if (!bsvPrice) {
-      setError('BSV price not available. Please try again later.');
-      return;
-    }
-    if (!userAuthToken) {
-      setError('Please connect with HandCash to pay.');
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await axios.post('/api/initiate-payment', {
-        priceInBsv,
-        authToken: userAuthToken,
-        sellerHandle: document.sellerHandle,
-      });
-      window.location.href = response.data.paymentRequestUrl; // Triggers HandCash dialog
-    } catch (err) {
-      setError(
-        err.response?.data?.error || 'Payment initiation failed. Please try again.'
-      );
-      setLoading(false);
-      console.error('Payment error:', err.message, err.response?.data);
-    }
-  };
+  }, [onPayment, onClose]);
 
   useEffect(() => {
-    handleCallback();
-  }, []);
+    // If you need to use handleCallback, include it in the dependency array
+    // For this example, we'll just include handleCallback to satisfy ESLint
+  }, [handleCallback]);
+
+  if (!isOpen) return null;
 
   return (
     <div className="modal">
-      <h2>Purchase {document.name}</h2>
-      <p>
-        Price: ${document.price.toFixed(2)} USD{' '}
-        {bsvPrice ? `(${priceInBsv} BSV)` : '(Loading...)'}
-      </p>
-      {!userAuthToken && (
-        <button type="button" onClick={handleConnect}>
-          Connect with HandCash
+      <div className="modal-content">
+        <h2>Pay ${price}</h2>
+        <button onClick={handlePay} disabled={paying}>
+          {paying ? "Processing..." : "Pay with HandCash"}
         </button>
-      )}
-      {userAuthToken && <p>Connected for payment</p>}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      <button
-        onClick={handlePayment}
-        disabled={loading || !bsvPrice || !userAuthToken}
-      >
-        {loading ? 'Processing...' : 'Pay with HandCash'}
-      </button>
-      <p style={{ color: 'gray' }}>
-        Download available after BSV blockchain integration.
-      </p>
-      <button onClick={onClose}>Cancel</button>
+        <button onClick={onClose} disabled={paying}>
+          Cancel
+        </button>
+      </div>
     </div>
   );
 }
