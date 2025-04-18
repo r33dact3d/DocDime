@@ -5,19 +5,23 @@
       "src": "package.json",
       "use": "@vercel/static-build",
       "config": { "distDir": "build" }
+    },
+    {
+      "src": "api/bsv-price.js",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
+    {
+      "src": "/api/bsv-price",
+      "dest": "api/bsv-price.js"
+    },
     {
       "src": "/static/(.*)",
       "headers": {
         "cache-control": "max-age=31536000,immutable"
       },
       "dest": "/static/$1"
-    },
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/$1"
     },
     {
       "src": "/(.*)",
