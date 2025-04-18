@@ -1,65 +1,127 @@
 import React, { useState } from 'react';
-import BSVPriceDisplay from './BSVPriceDisplay';
+import CryptoJS from 'crypto-js';
+import axios from 'axios';
 
-function DocumentUpload() {
+const DocumentUpload = () => {
   const [file, setFile] = useState(null);
-  const [error, setError] = useState(null);
+  const [fileName, setFileName] = useState('');
+  const [fileHash, setFileHash] = useState('');
+  const [price, setPrice] = useState(0.10); // Minimum $0.10 price
+  const [uploadError, setUploadError] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
 
-  const handleFileChange = (event) => {
+  const handleFileChange = async (event) => {
     const selectedFile = event.target.files[0];
-    if (selectedFile && selectedFile.size > 1024 * 1024) {
-      setError('File size exceeds 1MB limit.');
-      setFile(null);
-    } else {
-      setError(null);
-      setFile(selectedFile);
-    }
-  };
-
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    if (!file) {
-      setError('Please select a valid file.');
+    
+    // Validate file size (≤1MB)
+    if (selectedFile.size > 1 * 1024 * 1024) {
+      setUploadError('File must be 1MB or smaller');
       return;
     }
-    // Add logic for file upload and payment processing here
-    console.log('File ready for upload:', file);
+
+    // Generate SHA-256 hash
+    const arrayBuffer = await selectedFile.arrayBuffer();
+    const wordArray = CryptoJS.lib.WordArray.create(arrayBuffer);
+    const hash = CryptoJS.SHA256(wordArray).toString();
+
+    setFile(selectedFile);
+    setFileName(selectedFile.name);
+    setFileHash(hash);
+    setUploadError(null);
+  };
+
+  const handlePriceChange = (event) => {
+    const newPrice = parseFloat(event.target.value);
+    // Enforce minimum $0.10 price
+    setPrice(Math.max(0.10, newPrice));
+  };
+
+  const handleUpload = async () => {
+    if (!file) {
+      setUploadError('Please select a file');
+      return;
+    }
+
+    if (price < 0.10) {
+      setUploadError('Minimum price is $0.10');
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('fileName', fileName);
+      formData.append('fileHash', fileHash);
+      formData.append('price', price);
+
+      const response = await axios.post('/api/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      // TODO: Integrate with HandCash payment flow
+      console.log('Upload successful:', response.data);
+      
+      // Reset form
+      setFile(null);
+      setFileName('');
+      setFileHash('');
+      setPrice(0.10);
+    } catch (error) {
+      setUploadError(error.response?.data?.message || 'Upload failed');
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
-    <div style={{ backgroundColor: '#ff9900', color: '#000000', padding: '20px', borderRadius: '8px' }}>
-      <h1 style={{ textAlign: 'center' }}>Upload Your Document</h1>
-      <BSVPriceDisplay />
-      <form onSubmit={handleSubmit} style={{ marginTop: '20px' }}>
-        <div style={{ marginBottom: '10px' }}>
-          <label htmlFor="fileUpload" style={{ display: 'block', marginBottom: '5px' }}>
-            Choose a file (max 1MB):
-          </label>
-          <input
-            type="file"
-            id="fileUpload"
-            onChange={handleFileChange}
-            accept=".pdf,.doc,.docx,.txt"
-            style={{ padding: '5px', borderRadius: '4px', border: '1px solid #000000' }}
-          />
+    <div className="document-upload">
+      <h2>Upload Document</h2>
+      
+      <input 
+        type="file" 
+        onChange={handleFileChange}
+        accept=".pdf,.doc,.docx,.txt,.jpg,.png,.jpeg"
+      />
+      
+      {fileName && (
+        <div>
+          <p>File: {fileName}</p>
+          <p>File Hash: {fileHash}</p>
         </div>
-        {error && <p style={{ color: '#ff0000', fontWeight: 'bold' }}>{error}</p>}
-        <button
-          type="submit"
-          style={{
-            backgroundColor: '#000000',
-            color: '#ff9900',
-            padding: '10px 20px',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-          }}
-        >
-          Upload
-        </button>
-      </form>
+      )}
+      
+      <div>
+        <label>
+          Price (minimum $0.10):
+          <input 
+            type="number" 
+            value={price} 
+            onChange={handlePriceChange}
+            min="0.10"
+            step="0.01"
+          />
+        </label>
+      </div>
+      
+      {uploadError && (
+        <div style={{ color: 'red' }}>
+          {uploadError}
+        </div>
+      )}
+      
+      <button 
+        onClick={handleUpload} 
+        disabled={!file || isUploading}
+      >
+        {isUploading ? 'Uploading...' : 'Upload Document'}
+      </button>
     </div>
   );
-}
+};
 
 export default DocumentUpload;
