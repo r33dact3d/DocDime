@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import CryptoJS from 'crypto-js';
+import HandCashPayment from './HandCashPayment';
 
 function DocumentUpload() {
   const [file, setFile] = useState(null);
@@ -10,6 +11,7 @@ function DocumentUpload() {
   const [uploadError, setUploadError] = useState(null);
   const [uploadSuccess, setUploadSuccess] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [paymentCompleted, setPaymentCompleted] = useState(false);
 
   const handleFileChange = async (event) => {
     const selectedFile = event.target.files[0];
@@ -76,6 +78,12 @@ function DocumentUpload() {
     }
   };
 
+  const handlePaymentSuccess = (paymentResult) => {
+    // After successful payment, upload the file
+    setPaymentCompleted(true);
+    handleUpload();
+  };
+
   return (
     <div className="document-upload">
       <h2>Upload Document</h2>
@@ -95,9 +103,12 @@ function DocumentUpload() {
           step="0.01"
         />
       </div>
-      <button onClick={handleUpload} disabled={!file || isUploading}>
-        {isUploading ? 'Uploading...' : 'Upload Document'}
-      </button>
+      {file && (
+        <HandCashPayment 
+          filePrice={price}
+          onPaymentSuccess={handlePaymentSuccess}
+        />
+      )}
       {uploadError && <div className="error-message">{uploadError}</div>}
       {uploadSuccess && <div className="success-message">{uploadSuccess}</div>}
     </div>

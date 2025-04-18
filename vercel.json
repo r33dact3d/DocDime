@@ -6,38 +6,35 @@
       "use": "@vercel/static-build",
       "config": { "distDir": "build" }
     },
-    {
-      "src": "api/bsv-price.js",
-      "use": "@vercel/node"
-    },
-    {
+    { 
       "src": "api/upload.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
-    {
-      "src": "/api/bsv-price",
-      "dest": "api/bsv-price.js"
-    },
-    {
+    { 
       "src": "/api/upload",
       "dest": "api/upload.js"
     },
-    {
-      "src": "/static/(.*)",
-      "headers": {
-        "cache-control": "max-age=31536000,immutable"
-      },
-      "dest": "/static/$1"
-    },
-    {
+    { 
       "src": "/(.*)",
-      "dest": "/index.html"
+      "dest": "/"
     }
   ],
   "env": {
-    "CI": "false",
-    "PUBLIC_URL": "/"
-  }
+    "REACT_APP_HANDCASH_APP_ID": "@handcash_app_id",
+    "REACT_APP_HANDCASH_APP_SECRET": "@handcash_app_secret",
+    "CI": "false"
+  },
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Credentials", "value": "true" },
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET,OPTIONS,PATCH,DELETE,POST,PUT" },
+        { "key": "Access-Control-Allow-Headers", "value": "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version" }
+      ]
+    }
+  ]
 }
