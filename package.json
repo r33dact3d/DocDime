@@ -1,6 +1,7 @@
 {
   "name": "docdime",
   "version": "1.0.0",
+  "homepage": ".",
   "private": true,
   "dependencies": {
     "@handcash/handcash-connect": "^0.8.11",
