@@ -3,14 +3,27 @@
   "version": "1.0.0",
   "type": "commonjs",
   "private": true,
-  
+  "dependencies": {
+    "@handcash/handcash-connect": "^0.8.11",
+    "axios": "^1.6.7",
+    "buffer": "^6.0.3",
+    "crypto-js": "^4.2.0",
+    "dotenv": "^16.5.0",
+    "express": "^4.18.4",
+    "process": "^0.11.10",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.22.0",
+    "react-scripts": "5.0.1",
+    "vercel": "^41.6.1"
+  },
   "scripts": {
     "start": "react-scripts start",
     "start:server": "node server.js",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "vercel-build": "CI=false npm run build && echo 'Build completed successfully'",
+    "vercel-build": "npm install && CI=false npm run build && echo 'Build completed successfully'",
     "prebuild": "echo 'Node version:' && node --version && echo 'NPM version:' && npm --version && echo 'Starting build process'",
     "postbuild": "echo 'Build process completed' && ls -la build",
     "deploy": "vercel",
@@ -24,6 +37,18 @@
     "rules": {
       "no-unused-vars": "warn",
       "react-hooks/exhaustive-deps": "warn"
-    } 
+    }
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
-}
+} 
