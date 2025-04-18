@@ -11,11 +11,7 @@
       "src": "/(.*)",
       "dest": "/"
     }
-  ],
-  "env": {
-    "REACT_APP_HANDCASH_APP_ID": "@handcash_app_id",
-    "REACT_APP_HANDCASH_APP_SECRET": "@handcash_app_secret"
-  },
+  ], 
   "build": {
     "env": {
       "CI": "false"
