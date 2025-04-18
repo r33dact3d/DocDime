@@ -1,34 +1,40 @@
-import 'dotenv/config';
-const COINGECKO_API_KEY = process.env.COINGECKO_API_KEY;
-console.log("COINGECKO_API_KEY:", COINGECKO_API_KEY);
-
-import express from 'express';
-import axios from 'axios';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
+require('dotenv').config();
+const express = require('express');
+const axios = require('axios');
+const path = require('path');
+const cors = require('cors');
 
 const app = express();
-app.get('/api/bsv-price', async (_, res) => {
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const PORT = process.env.PORT || 3001;
 
-// Backend API endpoint for BSV price
+// Enable CORS for all routes
+app.use(cors());
+
+// BSV Price API endpoint
 app.get('/api/bsv-price', async (req, res) => {
+  const COINGECKO_API_KEY = process.env.COINGECKO_API_KEY;
+  let url = "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin-cash-sv&vs_currencies=usd";
+  
+  if (COINGECKO_API_KEY) {
+    url += `&x_cg_demo_api_key=${COINGECKO_API_KEY}`;
+  }
+  
   try {
-    const response = await axios.get(
-      `https://api.coingecko.com/api/v3/simple/price?ids=bitcoin-cash-sv&vs_currencies=usd&x_cg_demo_api_key=${COINGECKO_API_KEY}`,
-    );
-    console.log("CoinGecko API response:", response.data);
-    res.json(response.data);
+    const response = await axios.get(url);
+    res.status(200).json(response.data);
   } catch (err) {
-    console.error("CoinGecko API error:", err);
-    res.status(500).json({ error: 'Failed to fetch BSV price' });
-app.get('*', (_, res) => {
+    console.error("CoinGecko API error:", err.response ? err.response.data : err.message);
+    res.status(500).json({
+      error: 'Failed to fetch BSV price',
+      details: err.response ? err.response.data : err.message,
+    });
+  }
 });
 
-// Serve React frontend
+// Serve static files from the React build directory
 app.use(express.static(path.join(__dirname, 'build')));
+
+// Handle React routing, return all requests to React app
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
