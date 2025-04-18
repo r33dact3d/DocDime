@@ -9,12 +9,20 @@
     {
       "src": "api/bsv-price.js",
       "use": "@vercel/node"
+    },
+    {
+      "src": "api/upload.js",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/api/bsv-price",
       "dest": "api/bsv-price.js"
+    },
+    {
+      "src": "/api/upload",
+      "dest": "api/upload.js"
     },
     {
       "src": "/static/(.*)",
