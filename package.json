@@ -1,12 +1,12 @@
 {
   "name": "docdime",
   "version": "1.0.0",
+  "type": "commonjs",
   "private": true,
   "dependencies": {
     "@handcash/handcash-connect": "^0.8.11",
     "axios": "^1.6.7",
     "buffer": "^6.0.3",
-    "cors": "^2.8.5",
     "crypto-js": "^4.2.0",
     "dotenv": "^16.5.0",
     "express": "^4.18.4",
@@ -40,8 +40,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "devDependencies": {
-    "concurrently": "^9.1.2"
   }
 }

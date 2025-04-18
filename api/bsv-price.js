@@ -1,10 +1,8 @@
-require('dotenv').config();
 const axios = require('axios');
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   const COINGECKO_API_KEY = process.env.COINGECKO_API_KEY;
-  let url = "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin-cash-sv&vs_currencies=usd";
-  
+  let url = "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin-cash-sv&vs_currencies=usd"
   if (COINGECKO_API_KEY) {
     url += `&x_cg_demo_api_key=${COINGECKO_API_KEY}`;
   }
@@ -19,4 +17,4 @@ export default async function handler(req, res) {
       details: err.response ? err.response.data : err.message,
     });
   }
-}
+};
