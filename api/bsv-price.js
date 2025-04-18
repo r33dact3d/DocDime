@@ -1,4 +1,3 @@
-// filepath: [bsv-price.js](http://_vscodecontentref_/5)
 import axios from 'axios';
 
 export default async function handler(req, res) {
@@ -12,6 +11,9 @@ export default async function handler(req, res) {
     res.status(200).json(response.data);
   } catch (err) {
     console.error("CoinGecko API error:", err.response ? err.response.data : err.message);
-    res.status(500).json({ error: 'Failed to fetch BSV price' });
+    res.status(500).json({
+      error: 'Failed to fetch BSV price',
+      details: err.response ? err.response.data : err.message,
+    });
   }
 }
