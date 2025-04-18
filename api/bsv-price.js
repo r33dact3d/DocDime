@@ -1,6 +1,7 @@
+// filepath: [bsv-price.js](http://_vscodecontentref_/5)
 import axios from 'axios';
 
-export default async (_, res) => {
+export default async function handler(req, res) {
   const COINGECKO_API_KEY = process.env.COINGECKO_API_KEY;
   let url = "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin-cash-sv&vs_currencies=usd";
   if (COINGECKO_API_KEY) {
@@ -13,4 +14,4 @@ export default async (_, res) => {
     console.error("CoinGecko API error:", err.response ? err.response.data : err.message);
     res.status(500).json({ error: 'Failed to fetch BSV price' });
   }
-};
+}
