@@ -20,10 +20,10 @@
   "scripts": {
     "start": "react-scripts start",
     "start:server": "node server.js",
-    "build": "react-scripts build",
+    "build": "PUBLIC_URL=/ react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "vercel-build": "npm install && CI=false npm run build && echo 'Build completed successfully'",
+    "vercel-build": "npm install && CI=false PUBLIC_URL=/ npm run build && echo 'Build completed successfully'",
     "prebuild": "echo 'Node version:' && node --version && echo 'NPM version:' && npm --version && echo 'Starting build process'",
     "postbuild": "echo 'Build process completed' && ls -la build",
     "deploy": "vercel",
