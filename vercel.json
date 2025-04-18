@@ -3,27 +3,22 @@
   "builds": [
     {
       "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": { "distDir": "build" }
-    },
-    {
-      "src": "api/upload.js",
       "use": "@vercel/node"
     }
   ],
-  "rewrites": [
-    { 
-      "source": "/api/upload", 
-      "destination": "/api/upload.js" 
-    },
-    { 
-      "source": "/(.*)", 
-      "destination": "/" 
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/"
     }
   ],
   "env": {
-    "REACT_APP_HANDCASH_APP_ID": "",
-    "REACT_APP_HANDCASH_APP_SECRET": "",
-    "CI": "false"
+    "REACT_APP_HANDCASH_APP_ID": "@handcash_app_id",
+    "REACT_APP_HANDCASH_APP_SECRET": "@handcash_app_secret"
+  },
+  "build": {
+    "env": {
+      "CI": "false"
+    }
   }
 }
